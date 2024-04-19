@@ -1,0 +1,1 @@
+docker build . -t pulkitkakar/my-chat:1.0 && docker push pulkitkakar/my-chat:1.0

@@ -20,5 +20,9 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "pkakar00 <pkakar00@mylangara.ca>",
+  "license": "MIT"
 }

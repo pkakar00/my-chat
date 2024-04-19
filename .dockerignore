@@ -1,0 +1,5 @@
+node_modules
+packages/backend-api/node_modules
+packages/backend-api/.env
+packages/prisma-db/.env
+packages/prisma-db/node_modules

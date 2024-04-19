@@ -1,0 +1,17 @@
+services:
+  redis:
+      image: "redis:latest"
+      ports:
+        - "6379:6379"
+      restart: on-failure
+  backend-api:
+    image: "pulkitkakar/my-chat:1.0"
+    ports:
+      - "3001:3001"
+    pull_policy: always
+    depends_on:
+      - redis
+    restart: on-failure
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=mysql://admin:7L7NDfXisIcG3S0NRc3l@my-chat-db.c9smy8oquu4c.us-east-2.rds.amazonaws.com:3306/mychatdb

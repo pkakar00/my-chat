@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
-  transpilePackages: ["@repo/ui", '@repo/states'],
+  transpilePackages: ['@repo/states'],
+  reactStrictMode:true
 };

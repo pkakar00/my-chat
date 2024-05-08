@@ -5,10 +5,10 @@
 	"types": "index.ts",
 	"license": "MIT",
 	"devDependencies": {
-		"prisma": "^5.9.1"
+		"prisma": "^5.13.0"
 	},
 	"dependencies": {
-		"@prisma/client": "^5.12.1",
+		"@prisma/client": "^5.13.0",
 		"typescript": "latest"
 	},
 	"exports": {

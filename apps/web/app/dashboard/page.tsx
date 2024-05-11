@@ -1,6 +1,6 @@
 "use client";
 // eslint-disable-next-line turbo/no-undeclared-env-vars
-let url = process.env.WEBSITE_URL || "http://localhost:3000/";
+let url = process.env.NEXT_PUBLIC_WEBSITE_URL || "http://localhost:3000/";
 import Contacts from "../../components/Contacts";
 import ChatScreen from "../../components/ChatScreen";
 import ClientComponentContext from "../../components/client-wrapper/ClientComponentContext";

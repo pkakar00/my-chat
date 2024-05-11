@@ -1,6 +1,6 @@
 /* eslint-disable turbo/no-undeclared-env-vars */
 "use client";
-let url = process.env.WEBSITE_URL || "http://localhost:3000/";
+let url = process.env.NEXT_PUBLIC_WEBSITE_URL || "http://localhost:3000/";
 import { useCallback, useEffect, useState } from "react";
 import { ClientSession } from "../../app/dashboard/page";
 import { User } from "@repo/prisma-db";

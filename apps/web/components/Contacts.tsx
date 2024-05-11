@@ -19,7 +19,7 @@ export default function Contacts({
   useEffect(() => {
     (async () => {
       // eslint-disable-next-line turbo/no-undeclared-env-vars
-      const url = process.env.WEBSITE_URL || "http://localhost:3000";
+      const url = process.env.NEXT_PUBLIC_WEBSITE_URL || "http://localhost:3000";
       try {
         const fetchReq = await fetch(url + "/api/auth/get-contacts", {
           method: "GET",

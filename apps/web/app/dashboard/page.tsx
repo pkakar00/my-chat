@@ -5,67 +5,89 @@ import Contacts from "../../components/Contacts";
 import ChatScreen from "../../components/ChatScreen";
 import ClientComponentContext from "../../components/client-wrapper/ClientComponentContext";
 import { signOut, useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { User } from "@repo/prisma-db";
 import FriendRequest from "../../components/client-wrapper/FriendRequest";
 
 export default function Page() {
+  const deviceIdRef = useRef<string>("");
+  const router = useRouter();
+  const [deviceId, setDeviceId] = useState<string>("");
   const [error, setError] = useState<{
     error: boolean;
     message: string | null;
   }>({ error: false, message: null });
   const [userId, setUserId] = useState<string | null>(null);
-  const [deviceId] = useState<string>("1");
   const webSocket = useRef<WebSocket | null>(null);
+  const [isSubscribed,setIsSubscribed] = useState<boolean>(false);
   const [webSocketProp, setWebSocketProp] = useState<WebSocket | null>(null);
-  const getDeviceId = useCallback(() => {
-    return deviceId;
-  }, [deviceId]);
   useEffect(() => {
     let wsConn: WebSocket;
+    async function eventHandler() {
+      await subscribeDeviceToUser();
+    }
     if (typeof window !== "undefined") {
       (async () => {
-        fetch(process.env.NEXT_PUBLIC_API_URL+'/register-device',{method:"GET"});
+        const u = await getUserId();
+
+        const deviceIdBody = await fetch(
+          process.env.NEXT_PUBLIC_API_URL + "/register-device/" + u,
+          {
+            method: "POST",
+          }
+        );
+        const devId: string = await deviceIdBody.json();
+        console.log("DEVICEID");
+        console.log(devId);
+        if (!devId) {
+          deviceIdRef.current = "1";
+          setDeviceId("1");
+        } else {
+          deviceIdRef.current = devId;
+          setDeviceId(devId);
+        }
         try {
           // eslint-disable-next-line turbo/no-undeclared-env-vars
-          wsConn = new WebSocket(process.env.NEXT_PUBLIC_WS_URL||"");
+          wsConn = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || "");
           webSocket.current = wsConn;
+
+          wsConn.addEventListener("open", eventHandler);
           setWebSocketProp(wsConn);
-          const devId = await getDeviceId();
-          subscribeDeviceToUser(devId, wsConn);
         } catch (error) {
           console.log("Here in error block" + error);
         }
       })();
-
-      return () => {
-        if (wsConn.OPEN == 1) {
-          wsConn.close();
-        }
-      };
     }
+    return () => {
+      if (wsConn && wsConn.OPEN == 1) {
+        wsConn.removeEventListener("open", eventHandler);
+        wsConn.close();
+      }
+    };
   }, []);
-  const subscribeDeviceToUser = useCallback(
-    async (devId: string, webSocket: WebSocket | null) => {
-      if (!webSocket) throw new Error("Websocket not available");
-      const userId = await getUserId();
-      console.log("userId " + userId);
-      console.log(webSocket);
+  const subscribeDeviceToUser = useCallback(async () => {
+    if (!webSocket.current) throw new Error("Websocket not available");
+    const userId = await getUserId();
+    console.log("Inside subscribe device");
+    console.log("userId " + userId);
+    console.log(webSocket);
 
-      webSocket.send(
-        JSON.stringify({
-          type: "subscribe-userid",
-          deviceId: devId,
-          userId,
-          message: null,
-          receiverId: null,
-          payload: null,
-        })
-      );
-    },
-    [userId]
-  );
+    console.log("deviceid = " + deviceIdRef.current);
+
+    webSocket.current.send(
+      JSON.stringify({
+        type: "subscribe-userid",
+        deviceId: deviceIdRef.current,
+        userId,
+        message: null,
+        receiverId: null,
+        payload: null,
+      })
+    );
+    console.log("Inside subscribe device 2");
+    setIsSubscribed(true);
+  }, [userId]);
   const getUserId = useCallback(
     async function (): Promise<string> {
       try {
@@ -104,10 +126,11 @@ export default function Page() {
           Signout
         </button>
         <ClientComponentContext>
-          <Contacts wsConn={webSocketProp} className="" />
+          <Contacts wsConn={webSocket.current} className="" />
           <ChatScreen
             wsConn={webSocket.current}
             session={session.data.user}
+            isSubscribed={isSubscribed}
             className=""
           />
         </ClientComponentContext>

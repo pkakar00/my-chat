@@ -1,4 +1,5 @@
 import { prisma } from "@repo/prisma-db";
+import { log } from "console";
 import { getServerSession } from "next-auth";
 
 export async function GET() {
@@ -8,6 +9,7 @@ export async function GET() {
     if (!email) throw new Error("Email not found");
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) throw new Error("User not found");
+    log(user);
     return Response.json(user);
   } catch (e) {
     const error: { message: string } = e as any;

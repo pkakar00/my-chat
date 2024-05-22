@@ -2,7 +2,6 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import http from "http";
-import useragent from "useragent";
 import { WebSocketServer } from "ws";
 import { createClient } from "redis";
 import { RedisSubscriptionManager } from "./RedisClient.js";
@@ -13,7 +12,7 @@ export type ChatMsg = {
   senderId: string;
   receiverId: string;
 };
-const client = createClient({url:process.env.REDIS_URL});
+const client = createClient({ url: process.env.REDIS_URL });
 console.log(process.env.REDIS_URL);
 
 client.on("error", (err) => console.log("Redis Client Error", err));
@@ -28,32 +27,19 @@ app.use(bodyParser.json());
 app.get("/heath-check", (req, res) => {
   res.sendStatus(200);
 });
-app.get("/register-device", (req, res) => {
-  console.log("ip address");
-  console.log(req.socket.remoteAddress);
+app.post("/register-device/:userId", (req, res) => {
   
-  
-  const userAgentString = req.headers["user-agent"];
+  const userId = req.params.userId;
+  console.log("userId="+userId);
 
-  // Parse the user agent string using the useragent package
-  const userAgent = useragent.parse(userAgentString);
-  console.log("useragent header");
-  console.log(userAgentString);
-  
-
-  // Extract device information
-  const deviceInfo = {
-    browser: userAgent.toAgent(),
-    os: userAgent.os.toString(),
-    device: userAgent.device.toString(),
-  };
-  // console.log(deviceInfo);
-  // console.log("\n\nRemaining information\n\n\n");
-  // console.log(userAgent.device);
-
-  res.sendStatus(200);
+  const devices =
+    RedisSubscriptionManager.getInstance().subscriptions.get(userId);
+  let deviceNumber;
+  if (devices) deviceNumber = devices?.length + 1;
+  else deviceNumber = 0;
+  const deviceId = userId + "_" + deviceNumber;
+  res.json(deviceId);
 });
-
 wss.on("connection", async (ws) => {
   console.log("Connected");
   let userId: string | null = null;

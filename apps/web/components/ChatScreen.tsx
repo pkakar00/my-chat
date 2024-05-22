@@ -12,10 +12,12 @@ import { ClientSession } from "../app/dashboard/page";
 export default function ChatScreenContacts({
   wsConn,
   className,
+  isSubscribed
 }: {
   wsConn: WebSocket | null;
   className: string;
   session: ClientSession;
+  isSubscribed: boolean;
 }) {
   const [clearChatsText, setClearChatsText] = useState<string>("Clear Chats");
   const [deviceId] = useState<string>("1");
@@ -147,10 +149,10 @@ export default function ChatScreenContacts({
     },
     [userId, error]
   );
-
   if (!context?.selectedUser)
     return <div className={className}>This is ChatScreen</div>;
   else if (loading) return <div>Loading...</div>;
+  else if (!isSubscribed) return <div>Connecting to backend server...</div>
   else if (error.error) return <div>Error : {error.message}</div>;
   else
     return (
@@ -191,7 +193,7 @@ export default function ChatScreenContacts({
           }}
           type="text"
         />
-        <button
+        <button disabled={!isSubscribed}
           onClick={() => {
             if (message !== "") {
               sendMessage(message);

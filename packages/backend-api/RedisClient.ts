@@ -11,7 +11,7 @@ export class RedisSubscriptionManager {
   private static instance: RedisSubscriptionManager;
   private subscriber: RedisClientType;
   public publisher: RedisClientType;
-  private subscriptions: Map<string, string[]>; //userId, deviceId[]
+  public subscriptions: Map<string, string[]>; //userId, deviceId[]
   private reverseSubscriptions: Map<string, WSUser>; //deviceId, {userId, ws}
 
   private constructor() {
@@ -43,6 +43,8 @@ export class RedisSubscriptionManager {
     
     this.subscriber.subscribe(userId, (payload) => {
       try {
+        console.log("inside try subscribe");
+        
         const deviceIds = this.subscriptions.get(userId) || [];
         deviceIds.forEach((deviceId) => {
           const wsUserDetails = this.reverseSubscriptions.get(deviceId) || {
@@ -53,6 +55,10 @@ export class RedisSubscriptionManager {
               },
             },
           };
+          console.log("WS conn=");
+          console.log(wsUserDetails.ws);
+          console.log("Send func");
+          console.log(wsUserDetails.ws.send);
           wsUserDetails.ws.send(payload);
         });
       } catch (error) {
@@ -63,6 +69,11 @@ export class RedisSubscriptionManager {
   }
 
   unsubscribe(deviceId: string, userId: string) {
+    console.log("Unsubscribe block subsriptions");
+    console.log(this.subscriptions);
+    console.log("reverse-subsriptions");
+    console.log(this.reverseSubscriptions);
+    
     if (this.subscriptions.has(userId)) {
       let devices = this.subscriptions.get(userId) || [];
       devices = devices.filter((d) => d !== deviceId);
@@ -77,8 +88,15 @@ export class RedisSubscriptionManager {
       const userAndWs = this.reverseSubscriptions.get(deviceId)!;
       this.reverseSubscriptions.delete(deviceId);
       this.subscriber.unsubscribe(userId);
-
+      console.log("REDIS unsubsribe");
+      
     }
+    console.log("After cleanup");
+    console.log("subsriptions");
+    console.log(this.subscriptions);
+    console.log("reverse-subsriptions");
+    console.log(this.reverseSubscriptions);
+    
   }
 
   async removeContact(userId: string, receiverId: string) {

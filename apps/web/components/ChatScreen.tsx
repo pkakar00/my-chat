@@ -12,15 +12,16 @@ import { ClientSession } from "../app/dashboard/page";
 export default function ChatScreenContacts({
   wsConn,
   className,
-  isSubscribed
+  isSubscribed,
+  deviceId
 }: {
   wsConn: WebSocket | null;
   className: string;
   session: ClientSession;
   isSubscribed: boolean;
+  deviceId:string
 }) {
   const [clearChatsText, setClearChatsText] = useState<string>("Clear Chats");
-  const [deviceId] = useState<string>("1");
   const [userId, setUserId] = useState<string | null>(null);
   const [chats, setChats] = useState<ChatMsg[]>([]);
   const [message, setMessage] = useState("");

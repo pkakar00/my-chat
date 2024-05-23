@@ -128,6 +128,7 @@ export default function Page() {
         <ClientComponentContext>
           <Contacts wsConn={webSocket.current} className="" />
           <ChatScreen
+            deviceId={deviceIdRef.current}
             wsConn={webSocket.current}
             session={session.data.user}
             isSubscribed={isSubscribed}

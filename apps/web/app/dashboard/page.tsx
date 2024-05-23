@@ -20,7 +20,7 @@ export default function Page() {
   }>({ error: false, message: null });
   const [userId, setUserId] = useState<string | null>(null);
   const webSocket = useRef<WebSocket | null>(null);
-  const [isSubscribed,setIsSubscribed] = useState<boolean>(false);
+  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
   const [webSocketProp, setWebSocketProp] = useState<WebSocket | null>(null);
   useEffect(() => {
     let wsConn: WebSocket;
@@ -136,6 +136,7 @@ export default function Page() {
           />
         </ClientComponentContext>
         <FriendRequest
+          deviceId={deviceIdRef.current}
           wsConn={webSocket.current}
           session={session.data.user}
           className=""

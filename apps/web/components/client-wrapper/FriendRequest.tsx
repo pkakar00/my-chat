@@ -14,7 +14,9 @@ import {
 export default function FriendRequest({
   wsConn,
   session,
+  deviceId
 }: {
+  deviceId:string
   wsConn: WebSocket | null;
   className: string;
   session: ClientSession;
@@ -32,7 +34,6 @@ export default function FriendRequest({
   const [email, setEmail] = useState<string>("");
   const [userId, setUserId] = useState<string | null>(null);
   const [result, setResult] = useState<string>("");
-  const [deviceId] = useState<string>("1");
   const [requests, setRequests] = useState<RequestReturnType>({
     senderReq: [],
     receiverReq: [],

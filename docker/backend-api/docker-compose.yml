@@ -14,4 +14,4 @@ services:
     restart: on-failure
     environment:
       - REDIS_URL=redis://redis:6379
-      - DATABASE_URL=mysql://admin:7L7NDfXisIcG3S0NRc3l@my-chat-db.c9smy8oquu4c.us-east-2.rds.amazonaws.com:3306/mychatdb
+      - DATABASE_URL=mysql://root:my-secret-pw@localhost:3306/mychatdb

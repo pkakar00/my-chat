@@ -1,7 +1,7 @@
 "use client";
 // eslint-disable-next-line turbo/no-undeclared-env-vars
 let url = process.env.NEXT_PUBLIC_WEBSITE_URL || "http://localhost:3000/";
-console.log("NEXT_PUBLIC_WEBSITE_URL = "+process.env.NEXT_PUBLIC_WEBSITE_URL);
+console.log("NEXT_PUBLIC_WEBSITE_URL = " + process.env.NEXT_PUBLIC_WEBSITE_URL);
 
 import { useCallback, useContext, useEffect, useState } from "react";
 import { SelectedUserContext } from "./client-wrapper/ClientComponentContext";
@@ -13,16 +13,20 @@ export default function ChatScreenContacts({
   wsConn,
   className,
   isSubscribed,
-  deviceId
+  deviceId,
+  session,
+  userId,
+  getUserId,
 }: {
   wsConn: WebSocket | null;
   className: string;
   session: ClientSession;
   isSubscribed: boolean;
-  deviceId:string
+  deviceId: string;
+  userId: string | null;
+  getUserId: () => Promise<string>;
 }) {
   const [clearChatsText, setClearChatsText] = useState<string>("Clear Chats");
-  const [userId, setUserId] = useState<string | null>(null);
   const [chats, setChats] = useState<ChatMsg[]>([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -68,9 +72,20 @@ export default function ChatScreenContacts({
       );
       if (payload.type == "message") {
         console.log("Message received");
-        console.log(payload.payload.data);
-
-        setChats((chats) => [...chats, payload.payload.data]);
+        if (userId != null) {
+          console.log(payload.payload.data);
+          const si = payload.payload.data.senderId;
+          const ri = payload.payload.data.receiverId;
+          if (
+            (si == userId && ri == context.selectedUser?.id) ||
+            (si == context.selectedUser?.id && ri == userId)
+          )
+            setChats((chats) => [...chats, payload.payload.data]);
+        } else {
+          getUserId();
+          if (context.setRenderContacts) context.setRenderContacts((x) => !x);
+          console.log("userid not available");
+        }
       }
       if (payload.type == "removed-contact") {
         if (context.setRenderContacts) context.setRenderContacts((x) => !x);
@@ -130,30 +145,10 @@ export default function ChatScreenContacts({
     },
     [wsConn, context]
   );
-
-  const getUserId = useCallback(
-    async function (): Promise<string> {
-      try {
-        if (!userId) {
-          const response = await fetch(url + "api/auth/get-user", {
-            method: "GET",
-          });
-          const user: User = await response.json();
-          setUserId(user.id);
-          return user.id;
-        } else return userId;
-      } catch (e: any) {
-        const error: { message: string } = e as any;
-        setError({ error: true, message: error.message });
-        return "";
-      }
-    },
-    [userId, error]
-  );
   if (!context?.selectedUser)
     return <div className={className}>This is ChatScreen</div>;
   else if (loading) return <div>Loading...</div>;
-  else if (!isSubscribed) return <div>Connecting to backend server...</div>
+  else if (!isSubscribed) return <div>Connecting to backend server...</div>;
   else if (error.error) return <div>Error : {error.message}</div>;
   else
     return (
@@ -194,7 +189,8 @@ export default function ChatScreenContacts({
           }}
           type="text"
         />
-        <button disabled={!isSubscribed}
+        <button
+          disabled={!isSubscribed}
           onClick={() => {
             if (message !== "") {
               sendMessage(message);

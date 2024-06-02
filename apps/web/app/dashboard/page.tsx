@@ -128,6 +128,8 @@ export default function Page() {
         <ClientComponentContext>
           <Contacts wsConn={webSocket.current} className="" />
           <ChatScreen
+            getUserId={getUserId}
+            userId={userId}
             deviceId={deviceIdRef.current}
             wsConn={webSocket.current}
             session={session.data.user}
@@ -136,6 +138,8 @@ export default function Page() {
           />
         </ClientComponentContext>
         <FriendRequest
+          userId={userId}
+          getUserId={getUserId}
           deviceId={deviceIdRef.current}
           wsConn={webSocket.current}
           session={session.data.user}

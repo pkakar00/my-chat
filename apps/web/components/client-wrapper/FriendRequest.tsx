@@ -14,12 +14,16 @@ import {
 export default function FriendRequest({
   wsConn,
   session,
-  deviceId
+  deviceId,
+  getUserId,
+  userId
 }: {
   deviceId:string
   wsConn: WebSocket | null;
   className: string;
   session: ClientSession;
+  getUserId:()=>Promise<string>;
+  userId:string|null;
 }) {
   const [renderGetRequests, setRenderGetRequests] = useState<boolean>(false);
   const [renderOnSearch, setRenderOnSearch] = useState<boolean>(false);
@@ -32,7 +36,6 @@ export default function FriendRequest({
     usersNotAdded: [],
   });
   const [email, setEmail] = useState<string>("");
-  const [userId, setUserId] = useState<string | null>(null);
   const [result, setResult] = useState<string>("");
   const [requests, setRequests] = useState<RequestReturnType>({
     senderReq: [],
@@ -50,14 +53,14 @@ export default function FriendRequest({
       if (payload.type === "removed-contact") setRenderOnSearch((x) => !x);
       if (payload.type === "send-friend-request") {
         console.log("send-friend-request");
-        const reqsAsReceiver: ReqsAsReceiver = payload.payload;
+        const reqsAsReceiver: ReqsAsReceiver = payload.payload.receiverReq;
         setRequests((x) => ({
           senderReq: [...x.senderReq],
           receiverReq: reqsAsReceiver,
         }));
       }
       if (payload.type === "accept-friend-request") {
-        const reqsAsSender: ReqsAsSender = payload.payload;
+        const reqsAsSender: ReqsAsSender = payload.payload.senderReq;
         console.log("accept-friend-request");
         setRequests((x) => ({
           senderReq: reqsAsSender,
@@ -204,25 +207,6 @@ export default function FriendRequest({
       return true;
     }
   }, []);
-  const getUserId = useCallback(
-    async function (): Promise<string> {
-      try {
-        if (!userId) {
-          const response = await fetch(url + "api/auth/get-user", {
-            method: "GET",
-          });
-          const user: User = await response.json();
-          setUserId(user.id);
-          return user.id;
-        } else return userId;
-      } catch (e: any) {
-        const error: { message: string } = e as any;
-        setError({ error: true, message: error.message });
-        return "";
-      }
-    },
-    [userId, error]
-  );
   return (
     <>
       <br />

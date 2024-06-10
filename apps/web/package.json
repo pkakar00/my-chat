@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings 0"
+    "lint": "eslint . --max-warnings 0",
+    "postinstall": "yarn prisma generate"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",

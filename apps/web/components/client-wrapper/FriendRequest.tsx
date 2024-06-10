@@ -1,22 +1,22 @@
 /* eslint-disable turbo/no-undeclared-env-vars */
 "use client";
 let url = process.env.NEXT_PUBLIC_WEBSITE_URL || "http://localhost:3000/";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { ClientSession } from "../../app/dashboard/page";
-import { User } from "@repo/prisma-db";
 import { Recommendations } from "../../app/api/auth/get-recommendations/route";
 import {
   ReqsAsReceiver,
   ReqsAsSender,
   RequestReturnType,
 } from "../../app/api/auth/get-requests/route";
+import { SelectedUserContext } from "./ClientComponentContext";
+import { log } from "console";
 
 export default function FriendRequest({
   wsConn,
   session,
   deviceId,
   getUserId,
-  userId
 }: {
   deviceId:string
   wsConn: WebSocket | null;
@@ -41,6 +41,7 @@ export default function FriendRequest({
     senderReq: [],
     receiverReq: [],
   });
+  const context = useContext(SelectedUserContext);
 
   useEffect(() => {
     function eventHandler(e: any) {
@@ -48,8 +49,11 @@ export default function FriendRequest({
         type: string;
         payload: any;
       } = JSON.parse(e.data);
-      if (payload.type === "request-operation-successful")
+      console.log(payload.type);
+      if (payload.type === "request-operation-successful"){
         setRenderGetRequests((x) => !x);
+        context.setRenderContacts!(x=>!x);
+      }
       if (payload.type === "removed-contact") setRenderOnSearch((x) => !x);
       if (payload.type === "send-friend-request") {
         console.log("send-friend-request");
@@ -66,13 +70,17 @@ export default function FriendRequest({
           senderReq: reqsAsSender,
           receiverReq: [...x.receiverReq],
         }));
+        context.setRenderContacts!(x=>!x);
+        console.log("Ctx.set");
+        console.log(context.setRenderContacts);
+        
       }
     }
     wsConn?.addEventListener("message", eventHandler);
     return () => {
       wsConn?.removeEventListener("message", eventHandler);
     };
-  }, [wsConn]);
+  }, [wsConn,context.setRenderContacts]);
   useEffect(() => {
     const delay = 300;
     const debounceTimer = setTimeout(() => {

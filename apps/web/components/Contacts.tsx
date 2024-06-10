@@ -48,7 +48,9 @@ export default function Contacts({
               x.id === context?.selectedUser?.id ? "selected" : "regular"
             }
             onClick={() => {
-              context.setSelectedUser!(() => x);
+              context.setSelectedUser!(x);
+              console.log("X=");
+              console.log(x);
             }}
             style={{ border: "solid black", padding: "7px", margin: "3px" }}
           >

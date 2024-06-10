@@ -14,7 +14,6 @@ export default function ChatScreenContacts({
   className,
   isSubscribed,
   deviceId,
-  session,
   userId,
   getUserId,
 }: {
@@ -76,11 +75,19 @@ export default function ChatScreenContacts({
           console.log(payload.payload.data);
           const si = payload.payload.data.senderId;
           const ri = payload.payload.data.receiverId;
+          console.log(si == userId);
+
+          if (ri != context.selectedUser?.id) {
+            console.log("ri= " + ri);
+            console.log("selectedUser= " + context.selectedUser?.id);
+          }
+
           if (
             (si == userId && ri == context.selectedUser?.id) ||
             (si == context.selectedUser?.id && ri == userId)
-          )
+          ) {
             setChats((chats) => [...chats, payload.payload.data]);
+          }
         } else {
           getUserId();
           if (context.setRenderContacts) context.setRenderContacts((x) => !x);
@@ -96,7 +103,7 @@ export default function ChatScreenContacts({
     return () => {
       wsConn?.removeEventListener("message", eventHandler);
     };
-  }, [setChats, wsConn]);
+  }, [setChats, wsConn, context.selectedUser]);
   const clearChats = useCallback(async (recieverEmail: string | undefined) => {
     if (!recieverEmail) {
       setError({ error: true, message: "Contact userId not found" });

@@ -109,10 +109,10 @@ export default function Page() {
   );
 
   const session = useSession();
-  if (error.error) return <h1>{error.message}</h1>;
+  if (session.status === "unauthenticated") redirect("/");
   if (session.status === "loading") return <div>Authenticating...</div>;
-  else if (session.status === "unauthenticated") {
-    redirect("/");
+  else if (error.error) {
+    return <h1>{error.message}</h1>;
   } else if (session.status === "authenticated") {
     return (
       <div className="flex">

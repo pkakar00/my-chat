@@ -8,6 +8,10 @@ import { SelectedUserContext } from "./client-wrapper/ClientComponentContext";
 import { ChatMessage, User } from "@repo/prisma-db";
 import { ChatMsg } from "@repo/backend-api";
 import { ClientSession } from "../app/dashboard/page";
+import { Avatar, Typography } from "@mui/material";
+import CallIcon from "@mui/icons-material/Call";
+import VideocamIcon from "@mui/icons-material/Videocam";
+import SearchIcon from "@mui/icons-material/Search";
 
 export default function ChatScreenContacts({
   wsConn,
@@ -34,6 +38,7 @@ export default function ChatScreenContacts({
     message: string | null;
   }>({ error: false, message: null });
   const context = useContext(SelectedUserContext);
+  const selectedUser = context.selectedUser;
   useEffect(() => {
     if (typeof window !== "undefined") {
       (async () => {
@@ -138,7 +143,6 @@ export default function ChatScreenContacts({
     async (message: string) => {
       if (!wsConn) return;
       const userId = await getUserId();
-      // console.log("Sending message");
       wsConn.send(
         JSON.stringify({
           type: "publish-message",
@@ -154,13 +158,40 @@ export default function ChatScreenContacts({
   );
   if (!context?.selectedUser)
     return <div className={className}>This is ChatScreen</div>;
-  else if (loading) return <div>Loading...</div>;
-  else if (!isSubscribed) return <div>Connecting to backend server...</div>;
-  else if (error.error) return <div>Error : {error.message}</div>;
+  else if (loading) return <div className={className}>Loading...</div>;
+  else if (!isSubscribed)
+    return <div className={className}>Connecting to backend server...</div>;
+  else if (error.error)
+    return <div className={className}>Error : {error.message}</div>;
   else
     return (
-      <div>
-        Reciever : {context.selectedUser.name}
+      <div className={className}>
+        <div className="appbar">
+          <div className="appbar-grp1">
+            {selectedUser!.image ? (
+              <Avatar className="appbar-avt" src={selectedUser!.image} />
+            ) : (
+              <Avatar className="appbar-avt" alt="">
+                {selectedUser!.name?.charAt(0).toUpperCase()}
+              </Avatar>
+            )}
+            <div className="appbar-name">
+              {context.selectedUser.name!.charAt(0).toUpperCase() +
+                context.selectedUser.name!.substring(1)}
+            </div>
+          </div>
+          <div className="appbar-grp2">
+            <div className="vc">
+              <CallIcon />
+            </div>
+            <div className="ac">
+              <VideocamIcon />
+            </div>
+            <div className="search">
+              <SearchIcon />
+            </div>
+          </div>
+        </div>
         <br />
         <br />
         Chats:

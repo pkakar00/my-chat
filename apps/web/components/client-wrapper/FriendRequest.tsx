@@ -10,20 +10,31 @@ import {
   RequestReturnType,
 } from "../../app/api/auth/get-requests/route";
 import { SelectedUserContext } from "./ClientComponentContext";
-import { log } from "console";
+import TopMenu from "../TopMenu";
+import { Button, List, ListItem, TextField } from "@mui/material";
 
 export default function FriendRequest({
   wsConn,
   session,
   deviceId,
   getUserId,
+  display,
+  setDisplay,
 }: {
-  deviceId:string
+  deviceId: string;
   wsConn: WebSocket | null;
   className: string;
   session: ClientSession;
-  getUserId:()=>Promise<string>;
-  userId:string|null;
+  getUserId: () => Promise<string>;
+  userId: string | null;
+  display: { contacts: boolean; friendReq: boolean; profile: boolean };
+  setDisplay: React.Dispatch<
+    React.SetStateAction<{
+      contacts: boolean;
+      friendReq: boolean;
+      profile: boolean;
+    }>
+  >;
 }) {
   const [renderGetRequests, setRenderGetRequests] = useState<boolean>(false);
   const [renderOnSearch, setRenderOnSearch] = useState<boolean>(false);
@@ -50,9 +61,9 @@ export default function FriendRequest({
         payload: any;
       } = JSON.parse(e.data);
       console.log(payload.type);
-      if (payload.type === "request-operation-successful"){
+      if (payload.type === "request-operation-successful") {
         setRenderGetRequests((x) => !x);
-        context.setRenderContacts!(x=>!x);
+        context.setRenderContacts!((x) => !x);
       }
       if (payload.type === "removed-contact") setRenderOnSearch((x) => !x);
       if (payload.type === "send-friend-request") {
@@ -70,17 +81,16 @@ export default function FriendRequest({
           senderReq: reqsAsSender,
           receiverReq: [...x.receiverReq],
         }));
-        context.setRenderContacts!(x=>!x);
+        context.setRenderContacts!((x) => !x);
         console.log("Ctx.set");
         console.log(context.setRenderContacts);
-        
       }
     }
     wsConn?.addEventListener("message", eventHandler);
     return () => {
       wsConn?.removeEventListener("message", eventHandler);
     };
-  }, [wsConn,context.setRenderContacts]);
+  }, [wsConn, context.setRenderContacts]);
   useEffect(() => {
     const delay = 300;
     const debounceTimer = setTimeout(() => {
@@ -216,119 +226,142 @@ export default function FriendRequest({
     }
   }, []);
   return (
-    <>
+    <section className={"db-item-contacts"}>
+      <TopMenu
+        display={display}
+        setDisplay={setDisplay}
+        text={"Send Request"}
+      />
       <br />
       <br />
-      <br />
-
-      <h1>Find a friend</h1>
-      <input
-        value={email}
-        placeholder="Enter friend email"
+      <TextField
+        sx={{ width: "100%", color: "white" }}
         onChange={(e) => {
           setEmail(e.target.value);
+          setResult("");
         }}
-        type="text"
+        value={email}
+        placeholder="abc@gmail.com"
+        id="outlined-basic"
+        label="E-mail"
+        variant="outlined"
+        color="secondary"
       />
+      <br />
       <br />
       {email !== "" ? (
         <div>
-          <h3>Search Results:</h3>
-          <ul>
+          <div className="noto-font white-text">Search Results:</div>
+          <List>
             {recom.usersNotAdded.map((value, index) => (
-              <li key={index}>
+              <ListItem key={index}>
                 <div
+                  className="light-background regular curved-edges"
                   style={{
-                    border: "3px solid black",
+                    padding: "4%",
+                    width: "100%",
                     display: "flex",
                     flexDirection: "column",
-                    margin: "12px",
-                    padding: "5px",
+                    gap: "5px",
                   }}
                 >
-                  <div style={{ marginBottom: "5px" }} className="name">
-                    {value.name}
-                  </div>
-                  <div style={{ marginBottom: "5px" }} className="email">
-                    {value.email}
-                  </div>
-                  <button
+                  <div className="noto-font white-text">{value.name}</div>
+                  <div className="noto-font white-text">{value.email}</div>
+                  <Button
                     onClick={() => {
                       sendRequest(value.email);
                     }}
                   >
                     Send
-                  </button>
+                  </Button>
                 </div>
-              </li>
+              </ListItem>
             ))}
 
-            {recom.usersAlreadyAdded.map((value, index, array) => (
-              <li key={index}>
+            {recom.usersAlreadyAdded.map((value, index) => (
+              <ListItem key={index}>
                 <div
                   style={{
-                    border: "3px solid black",
+                    padding: "4%",
+                    width: "100%",
                     display: "flex",
                     flexDirection: "column",
-                    margin: "12px",
-                    padding: "5px",
+                    gap: "5px",
                   }}
+                  className="light-background regular curved-edges"
                 >
-                  <div style={{ marginBottom: "5px" }} className="name">
-                    {value.name}
-                  </div>
-                  <div style={{ marginBottom: "5px" }} className="email">
-                    {value.email}
-                  </div>
+                  <div className="noto-font white-text">{value.name}</div>
+                  <div className="noto-font white-text">{value.email}</div>
                   {value.email !== session?.email ? (
-                    <button
+                    <Button
                       onClick={() => {
                         removeContact(value.email);
                       }}
                     >
                       Remove contact
-                    </button>
+                    </Button>
                   ) : (
                     <></>
                   )}
                 </div>
-              </li>
+              </ListItem>
             ))}
-          </ul>
+          </List>
         </div>
       ) : (
         <></>
       )}
       <br />
-      <div>{result}</div>
+      <div className="noto-font white-text">{result}</div>
       <br />
-      <h3>Receieved Requests</h3>
-      <ul>
+      <div className="noto-font white-text">Receieved Requests</div>
+      <List>
         {requests.receiverReq.map((value, index) => (
-          <li key={index}>
-            Request from {value.sender.name} Email : {value.sender.email}
-            <button
-              onClick={() => {
-                acceptRequest(value.sender.email);
+          <ListItem key={index}>
+            <div
+              style={{
+                padding: "4%",
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: "5px",
               }}
+              className="light-background regular curved-edges"
             >
-              Accept
-            </button>
-          </li>
+              <div className="noto-font white-text">{value.sender.name}</div>
+              <div className="noto-font white-text">{value.sender.email}</div>
+              <Button
+                onClick={() => {
+                  acceptRequest(value.sender.email);
+                }}
+              >
+                Accept
+              </Button>
+            </div>
+          </ListItem>
         ))}
-      </ul>
+      </List>
       <br />
-      <h3>Sent Requests</h3>
-      <ul>
-        {requests.senderReq.map((value, index) => {
-          return (
-            <li key={index}>
-              Request sent to {value.receiver.name} Email :{" "}
-              {value.receiver.email}
-            </li>
-          );
-        })}
-      </ul>
-    </>
+      <div className="noto-font white-text">Sent Requests</div>
+      <List>
+        {requests.senderReq.map((value, index) => (
+          <ListItem key={index}>
+            <div
+              style={{
+                padding: "4%",
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: "5px",
+              }}
+              className="light-background regular curved-edges"
+            >
+              <div className="noto-font white-text">{value.receiver.name}</div>
+              <div className="noto-font white-text">{value.receiver.email}</div>
+            </div>
+          </ListItem>
+        ))}
+      </List>
+    </section>
   );
 }

@@ -4,15 +4,21 @@ let url = process.env.NEXT_PUBLIC_WEBSITE_URL || "http://localhost:3000/";
 import Contacts from "../../components/Contacts";
 import ChatScreen from "../../components/ChatScreen";
 import ClientComponentContext from "../../components/client-wrapper/ClientComponentContext";
-import { signOut, useSession } from "next-auth/react";
-import { redirect, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { User } from "@repo/prisma-db";
 import FriendRequest from "../../components/client-wrapper/FriendRequest";
+import ContactsSkeleton from "../../components/ContactsSkeleton";
+import UserProfile from "../../components/UserProfile";
 
 export default function Page() {
   const deviceIdRef = useRef<string>("");
-  const router = useRouter();
+  const [display, setDisplay] = useState<{
+    contacts: boolean;
+    friendReq: boolean;
+    profile: boolean;
+  }>({ contacts: true, friendReq: false, profile: false });
   const [deviceId, setDeviceId] = useState<string>("");
   const [error, setError] = useState<{
     error: boolean;
@@ -110,23 +116,43 @@ export default function Page() {
 
   const session = useSession();
   if (session.status === "unauthenticated") redirect("/");
-  if (session.status === "loading") return <div>Authenticating...</div>;
+  if (session.status === "loading") return <LoadingSkeleton />;
   else if (error.error) {
     return <h1>{error.message}</h1>;
   } else if (session.status === "authenticated") {
     return (
-      <div className="flex">
-        Welcome to Dashboard
-        <br />
-        <button
-          onClick={() => {
-            signOut();
-          }}
-        >
-          Signout
-        </button>
+      <div className="flex-dashboard">
         <ClientComponentContext>
-          <Contacts wsConn={webSocket.current} className="" />
+          {display.contacts ? (
+            <Contacts
+              display={display}
+              setDisplay={setDisplay}
+              wsConn={webSocket.current}
+            />
+          ) : display.friendReq ? (
+            <FriendRequest
+              display={display}
+              setDisplay={setDisplay}
+              userId={userId}
+              getUserId={getUserId}
+              deviceId={deviceIdRef.current}
+              wsConn={webSocket.current}
+              session={session.data.user}
+              className=""
+            />
+          ) : display.profile ? (
+            <UserProfile
+              display={display}
+              setDisplay={setDisplay}
+              session={session.data.user}
+            />
+          ) : (
+            <Contacts
+              display={display}
+              setDisplay={setDisplay}
+              wsConn={webSocket.current}
+            />
+          )}
           <ChatScreen
             getUserId={getUserId}
             userId={userId}
@@ -134,17 +160,9 @@ export default function Page() {
             wsConn={webSocket.current}
             session={session.data.user}
             isSubscribed={isSubscribed}
-            className=""
+            className="db-item-chatscreen"
           />
         </ClientComponentContext>
-        <FriendRequest
-          userId={userId}
-          getUserId={getUserId}
-          deviceId={deviceIdRef.current}
-          wsConn={webSocket.current}
-          session={session.data.user}
-          className=""
-        />
       </div>
     );
   }
@@ -157,3 +175,12 @@ export type ClientSession =
       image?: string | null | undefined;
     }
   | undefined;
+
+export function LoadingSkeleton() {
+  return (
+    <section className="flex-dashboard">
+      <ContactsSkeleton />
+      <div className="db-item-chatscreen"></div>
+    </section>
+  );
+}

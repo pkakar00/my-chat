@@ -2,11 +2,9 @@
 import { signIn, useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
-
 import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
@@ -41,7 +39,16 @@ function Copyright(props: any) {
     </Typography>
   );
 }
-const defaultTheme = createTheme();
+const defaultTheme = createTheme({
+  palette: {
+    primary: {
+      main:"#000000"
+    },
+    secondary:{
+      main:"#ffffff"
+    }
+  },
+});
 function SignIn({
   input,
   setInput,
@@ -51,7 +58,7 @@ function SignIn({
 }) {
   const handleSubmit = () => {
     console.log("handle sub");
-    
+
     signIn("email", {
       email: input,
       callbackUrl: process.env.NEXT_PUBLIC_WEBSITE_URL + "dashboard",
@@ -60,7 +67,6 @@ function SignIn({
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
-        <CssBaseline />
         <Box
           sx={{
             marginTop: 8,
@@ -76,7 +82,10 @@ function SignIn({
             Sign in
           </Typography>
           <Box
-            onSubmit={(e)=>{e.preventDefault();handleSubmit()}}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
             component="form"
             noValidate
             sx={{ mt: 1 }}
@@ -99,7 +108,9 @@ function SignIn({
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              onClick={()=>{handleSubmit()}}
+              onClick={() => {
+                handleSubmit();
+              }}
             >
               Login with email
             </Button>

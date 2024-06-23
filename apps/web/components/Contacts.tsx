@@ -1,13 +1,28 @@
 "use client";
+import * as React from "react";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import Avatar from "@mui/material/Avatar";
 import { User } from "@repo/prisma-db";
 import { useEffect, useState, useContext } from "react";
 import { SelectedUserContext } from "./client-wrapper/ClientComponentContext";
+import ContactsSkeleton from "./ContactsSkeleton";
+import TopMenu from "./TopMenu";
 
 export default function Contacts({
-  className,
+  display,
+  setDisplay,
 }: {
   wsConn: WebSocket | null;
-  className: string;
+  display: { contacts: boolean; friendReq: boolean; profile: boolean };
+  setDisplay: React.Dispatch<
+    React.SetStateAction<{
+      contacts: boolean;
+      friendReq: boolean;
+      profile: boolean;
+    }>
+  >;
 }) {
   const context = useContext(SelectedUserContext);
   const [loading, setLoading] = useState<boolean>(true);
@@ -19,7 +34,8 @@ export default function Contacts({
   useEffect(() => {
     (async () => {
       // eslint-disable-next-line turbo/no-undeclared-env-vars
-      const url = process.env.NEXT_PUBLIC_WEBSITE_URL || "http://localhost:3000";
+      const url =
+        process.env.NEXT_PUBLIC_WEBSITE_URL || "http://localhost:3000";
       try {
         const fetchReq = await fetch(url + "/api/auth/get-contacts", {
           method: "GET",
@@ -34,30 +50,46 @@ export default function Contacts({
       }
     })();
   }, [context.renderContacts]);
-  if (loading) return <div>Loading ...</div>;
-  if (error.error)
-    return <div>There is an error. Message : {error.message}</div>;
-  return (
-    <section className={className}>
-      Contacts
-      <ul>
-        {contacts.map((x) => (
-          <li
-            key={x.id}
-            className={
-              x.id === context?.selectedUser?.id ? "selected" : "regular"
-            }
-            onClick={() => {
-              context.setSelectedUser!(x);
-              console.log("X=");
-              console.log(x);
-            }}
-            style={{ border: "solid black", padding: "7px", margin: "3px" }}
-          >
-            {x.name}
-          </li>
-        ))}
-      </ul>
+  return loading ? (
+    <ContactsSkeleton />
+  ) : error.error ? (
+    <div>There is an error. Message : {error.message}</div>
+  ) : (
+    <section className={"db-item-contacts"}>
+      <>
+        <TopMenu display={display} setDisplay={setDisplay} text={"Chat"} />
+        <br />
+        <List>
+          {contacts.map((x) => (
+            <ListItem
+              alignItems="flex-start"
+              key={x.id}
+              className={
+                x.id === context?.selectedUser?.id
+                  ? "light-background selected curved-edges"
+                  : "light-background regular curved-edges"
+              }
+              onClick={() => {
+                context.setSelectedUser!(x);
+                console.log(x);
+              }}
+            >
+              <div className="contact">
+                <ListItemAvatar>
+                  {x.image ? (
+                    <Avatar src={x.image} />
+                  ) : (
+                    <Avatar alt="">{x.name?.charAt(0).toUpperCase()}</Avatar>
+                  )}
+                </ListItemAvatar>
+                <div>
+                  {x.name!.charAt(0).toUpperCase() + x.name!.substring(1)}
+                </div>
+              </div>
+            </ListItem>
+          ))}
+        </List>
+      </>
     </section>
   );
 }

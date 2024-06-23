@@ -1,6 +1,111 @@
-.regular{
-    background-color: white;
+* {
+  margin: 0;
+  padding: 0;
 }
-.selected{
-    background-color:aquamarine;
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+.regular :hover {
+  cursor: pointer;
+}
+.curved-edges {
+  border-radius: 5px;
+}
+.regular {
+  margin-bottom: 4%;
+}
+.selected {
+  border: 1px solid white;
+}
+.flex-dashboard {
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: row;
+  box-sizing: border-box;
+}
+.db-item-contacts {
+  background-color: #3c3c3c;
+  flex: 0 0 20%;
+  overflow-y: scroll;
+  padding: 1%;
+  box-shadow:5px 0px 5px rgb(0,0,0,0.2);
+  z-index: 1;
+}
+.db-item-chatscreen {
+  background-color: #979797;
+  flex: 1;
+}
+.contact {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: inherit;
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+.light-background {
+  background-color: #979797;
+}
+/* width */
+::-webkit-scrollbar {
+  width: 0.4vw;
+}
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: white;
+  border-radius: 10px;
+  height: 1vh;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: white;
+}
+.appbar {
+  display: flex;
+  background-color: #3c3c3c;
+  width: inherit;
+  padding: 0.7%;
+  padding-left: 3%;
+  padding-right: 5%;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0px 5px 4px rgb(0,0,0,0.2);
+}
+.appbar-grp1 {
+  position: static;
+  color: black;
+  display: flex;
+  gap: 2%;
+  align-items: center;
+  width: 100%;
+}
+.appbar-name {
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  color: white;
+}
+.appbar-grp2 {
+  display: flex;
+  gap: 20%;
+  color: white;
+}
+.noto-font{
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+.white-text{
+  color:white;
+}
+.black-text{
+  color:black;
 }

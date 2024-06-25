@@ -7,8 +7,8 @@ export async function createUserInDb(
   email: string
 ): Promise<{ status: boolean; error: string }> {
   try {
-    const checkUser = await prisma.user.findUnique({where:{email}});
-    if(checkUser) throw new Error("Email already used")
+    const checkUser = await prisma.user.findUnique({ where: { email } });
+    if (checkUser) throw new Error("Email already used");
     await prisma.user.create({
       data: {
         name: firstName + " " + lastName,
@@ -17,7 +17,11 @@ export async function createUserInDb(
     });
     return { status: true, error: "" };
   } catch (e) {
-    const error:{message:string}=e as any;
+    const error: { message: string } = e as any;
     return { status: false, error: error.message as string };
   }
+}
+export async function checkUserExists(email: string) {
+  const checkUser = await prisma.user.findUnique({ where: { email } });
+  return checkUser ? true : false;
 }

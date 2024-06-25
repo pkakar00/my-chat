@@ -13,14 +13,17 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { checkUserExists } from "./serverActions";
+import { Backdrop } from "@mui/material";
 
 export default function Page() {
   const [input, setInput] = useState<string>("");
+  const [backDrop, setBackDrop] = useState<boolean>(false);
   const session = useSession();
   useEffect(() => {
     if (session.status === "authenticated") redirect("/dashboard");
   }, [session.status]);
-  return <SignIn input={input} setInput={setInput} />;
+  return <SignIn backDrop={backDrop} input={input} setInput={setInput} setBackDrop={setBackDrop} />;
 }
 function Copyright(props: any) {
   return (
@@ -42,27 +45,32 @@ function Copyright(props: any) {
 const defaultTheme = createTheme({
   palette: {
     primary: {
-      main:"#000000"
+      main: "#000000",
     },
-    secondary:{
-      main:"#ffffff"
-    }
+    secondary: {
+      main: "#ffffff",
+    },
   },
 });
 function SignIn({
   input,
   setInput,
+  setBackDrop,
+  backDrop,
 }: {
   input: string;
+  backDrop: boolean;
   setInput: React.Dispatch<React.SetStateAction<string>>;
+  setBackDrop: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const handleSubmit = () => {
-    console.log("handle sub");
-
-    signIn("email", {
-      email: input,
-      callbackUrl: process.env.NEXT_PUBLIC_WEBSITE_URL + "dashboard",
-    });
+  const handleSubmit = async () => {
+    const userExists = await checkUserExists(input);
+    if (userExists)
+      signIn("email", {
+        email: input,
+        callbackUrl: process.env.NEXT_PUBLIC_WEBSITE_URL + "dashboard",
+      });
+    else setBackDrop(true);
   };
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -135,6 +143,9 @@ function SignIn({
           </Box>
         </Box>
         <Copyright sx={{ mt: 8, mb: 4 }} />
+        <Backdrop onClick={()=>{setBackDrop(false)}} open={backDrop}>
+          <div className="noto-font white-text">Account does not exist, Please sign up</div>
+        </Backdrop>
       </Container>
     </ThemeProvider>
   );

@@ -52,7 +52,7 @@ export default function UserProfile({
             <Avatar>{session?.name!.charAt(0).toUpperCase()}</Avatar>
           )}
         </div>
-        <br />+
+        <br />
         <br />
         <br />
         <div

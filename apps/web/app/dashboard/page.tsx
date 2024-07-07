@@ -28,6 +28,7 @@ export default function Page() {
   const webSocket = useRef<WebSocket | null>(null);
   const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
   const [webSocketProp, setWebSocketProp] = useState<WebSocket | null>(null);
+  const setIntervalTimeout = useRef<number>(0);
   useEffect(() => {
     let wsConn: WebSocket;
     async function eventHandler() {
@@ -57,7 +58,6 @@ export default function Page() {
           // eslint-disable-next-line turbo/no-undeclared-env-vars
           wsConn = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || "");
           webSocket.current = wsConn;
-
           wsConn.addEventListener("open", eventHandler);
           setWebSocketProp(wsConn);
         } catch (error) {
@@ -67,6 +67,7 @@ export default function Page() {
     }
     return () => {
       if (wsConn && wsConn.OPEN == 1) {
+        window.clearInterval(setIntervalTimeout.current);
         wsConn.removeEventListener("open", eventHandler);
         wsConn.close();
       }
@@ -93,6 +94,19 @@ export default function Page() {
     );
     console.log("Inside subscribe device 2");
     setIsSubscribed(true);
+    const timeout = window.setInterval(() => {
+      webSocket.current?.send(
+        JSON.stringify({
+          type: "keep-alive",
+          deviceId: deviceIdRef.current,
+          userId,
+          message: null,
+          receiverId: null,
+          payload: null,
+        })
+      );
+    }, 4000);
+    setIntervalTimeout.current = timeout;
   }, [userId]);
   const getUserId = useCallback(
     async function (): Promise<string> {

@@ -5,13 +5,20 @@ console.log("NEXT_PUBLIC_WEBSITE_URL = " + process.env.NEXT_PUBLIC_WEBSITE_URL);
 
 import { useCallback, useContext, useEffect, useState } from "react";
 import { SelectedUserContext } from "./client-wrapper/ClientComponentContext";
-import { ChatMessage, User } from "@repo/prisma-db";
+import { ChatMessage } from "@repo/prisma-db";
 import { ChatMsg } from "@repo/backend-api";
 import { ClientSession } from "../app/dashboard/page";
-import { Avatar, Typography } from "@mui/material";
+import {
+  Avatar,
+  CircularProgress,
+  circularProgressClasses,
+} from "@mui/material";
 import CallIcon from "@mui/icons-material/Call";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import SearchIcon from "@mui/icons-material/Search";
+import SendIcon from "@mui/icons-material/Send";
+import DeleteIcon from "@mui/icons-material/Delete";
+import React from "react";
 
 export default function ChatScreenContacts({
   wsConn,
@@ -29,7 +36,7 @@ export default function ChatScreenContacts({
   userId: string | null;
   getUserId: () => Promise<string>;
 }) {
-  const [clearChatsText, setClearChatsText] = useState<string>("Clear Chats");
+  const [clearChatsLoader, setClearChatsLoader] = useState<boolean>(false);
   const [chats, setChats] = useState<ChatMsg[]>([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -114,7 +121,7 @@ export default function ChatScreenContacts({
       setError({ error: true, message: "Contact userId not found" });
       return;
     }
-    setClearChatsText(() => "Deleting Chats ...");
+    setClearChatsLoader(true);
     const searchParams = new URLSearchParams({
       recieverEmail,
     });
@@ -136,7 +143,7 @@ export default function ChatScreenContacts({
     console.log("RES2");
     console.log(chats);
     setChats(chats);
-    setClearChatsText(() => "Clear Chats");
+    setClearChatsLoader(false);
   }, []);
 
   const sendMessage = useCallback(
@@ -181,63 +188,89 @@ export default function ChatScreenContacts({
             </div>
           </div>
           <div className="appbar-grp2">
-            <div className="vc">
+            <div className="vc black-hover">
               <CallIcon />
             </div>
-            <div className="ac">
+            <div className="ac black-hover">
               <VideocamIcon />
             </div>
-            <div className="search">
+            <div className="search black-hover">
               <SearchIcon />
+            </div>
+            <div>
+              {clearChatsLoader ? (
+                <GradientCircularProgress />
+              ) : (
+                <DeleteIcon
+                  className="black-hover"
+                  onClick={() => {
+                    clearChats(context.selectedUser?.email);
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>
-        <br />
-        <br />
-        Chats:
-        <button
-          onClick={() => {
-            clearChats(context.selectedUser?.email);
-          }}
-        >
-          {clearChatsText}
-        </button>
-        <br />
-        <div>
-          <ul>
-            {chats.map((chat, key) => (
-              <li key={key}>
-                {"Sender : " + chat.senderId + " : " + chat.content}
-              </li>
-            ))}
-          </ul>
+        <ul className="chat-flex-list">
+          {chats.map((chat, key) => {
+            if (chat.senderId == userId)
+              return (
+                <li className="chat-msg right noto-font" key={key}>
+                  <div className="min-content">{chat.content}</div>
+                </li>
+              );
+            else
+              return (
+                <li className="chat-msg left noto-font" key={key}>
+                  <div className="min-content">{chat.content}</div>
+                </li>
+              );
+          })}
+        </ul>
+        <div className="chat-input-container">
+          <input
+            type="text"
+            className="chat-input noto-font white-text"
+            placeholder="Type a message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (message !== "" && e.key === "Enter") {
+                sendMessage(message);
+                setMessage("");
+              }
+            }}
+          />
+          <button
+            className="chat-send-button"
+            disabled={!isSubscribed || message === ""}
+            onClick={() => {
+              if (message !== "") {
+                sendMessage(message);
+                setMessage("");
+              }
+            }}
+          >
+            <SendIcon />
+          </button>
         </div>
-        <br />
-        <br />
-        <input
-          onKeyDown={(e) => {
-            if (message !== "" && e.key === "Enter") {
-              sendMessage(message);
-              setMessage(() => "");
-            }
-          }}
-          value={message}
-          onChange={(e) => {
-            setMessage(e.target.value);
-          }}
-          type="text"
-        />
-        <button
-          disabled={!isSubscribed}
-          onClick={() => {
-            if (message !== "") {
-              sendMessage(message);
-              setMessage(() => "");
-            }
-          }}
-        >
-          Send
-        </button>
       </div>
     );
+}
+function GradientCircularProgress() {
+  return (
+    <React.Fragment>
+      <svg width={0} height={0}>
+        <defs>
+          <linearGradient id="my_gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#e01cd5" />
+            <stop offset="100%" stopColor="#1CB5E0" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <CircularProgress size={25}
+        sx={{ "svg circle": { stroke: "url(#my_gradient)" } }}
+      />
+    </React.Fragment>
+  );
 }

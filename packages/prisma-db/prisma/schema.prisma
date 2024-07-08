@@ -60,9 +60,9 @@ model VerificationToken {
 }
 
 model Contact {
-  receiver   User   @relation("reciever-relation", fields: [recieverId], references: [id])
+  receiver   User   @relation("reciever-relation", fields: [recieverId], references: [id], onDelete: Cascade)
   recieverId String
-  User       User   @relation(fields: [userId], references: [id])
+  User       User   @relation(fields: [userId], references: [id],onDelete: Cascade)
   userId     String
 
   @@id([recieverId, userId])
@@ -70,11 +70,11 @@ model Contact {
 
 model Request {
   // User receiving the request
-  receiver   User   @relation("request-relation", fields: [receiverId], references: [id])
+  receiver   User   @relation("request-relation", fields: [receiverId], references: [id],onDelete: Cascade)
   receiverId String
 
   // User sending the request
-  sender   User   @relation(fields: [senderId], references: [id])
+  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
   senderId String
 
   @@id([receiverId, senderId])
@@ -93,10 +93,10 @@ model ChatMessage {
   content   String
   timestamp DateTime @default(now())
 
-  sender   User   @relation("sender", fields: [senderId], references: [id])
+  sender   User   @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
   senderId String
 
-  receiver   User    @relation("reciever", fields: [receiverId], references: [id])
+  receiver   User    @relation("reciever", fields: [receiverId], references: [id], onDelete: Cascade)
   receiverId String
 
   @@index([senderId], name: "sender_idx")

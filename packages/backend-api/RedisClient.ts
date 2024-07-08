@@ -49,6 +49,10 @@ export class RedisSubscriptionManager {
     ]);
 
     this.reverseSubscriptions.set(deviceId, { userId, ws });
+    console.log("Subscriptions");
+    console.log(this.subscriptions);
+    console.log("Reverse-Subscriptions");
+    console.log(this.reverseSubscriptions);
 
     if (!this.subscribedUserIds.has(userId)) {
       this.subscribedUserIds.add(userId);
@@ -97,6 +101,10 @@ export class RedisSubscriptionManager {
       type: "message",
       payload: { data },
     });
+    this.publish(data.receiverId, {
+      type: "message",
+      payload: { data },
+    });
     console.log("Publish message");
   }
 
@@ -117,7 +125,7 @@ export class RedisSubscriptionManager {
     });
     this.publish(senderId, { type: "request-operation-successful" });
   }
-
+  
   publish(userId: string, message: any) {
     console.log(`Publishing message to ${userId}`);
     this.publisher.publish(userId, JSON.stringify(message));

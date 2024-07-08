@@ -5,9 +5,11 @@
   "types": "index.ts",
   "license": "MIT",
   "scripts": {
-    "prestart": "tsc",
     "start": "node dist/index.js"
   },
+  "exports": {
+		".": "./index.ts"
+	},
   "dependencies": {
     "@repo/prisma-db": "*",
     "body-parser": "^1.20.2",

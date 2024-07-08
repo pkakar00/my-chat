@@ -28,15 +28,18 @@ app.get("/heath-check", (req, res) => {
   res.sendStatus(200);
 });
 app.post("/register-device/:userId", (req, res) => {
-  
   const userId = req.params.userId;
-  console.log("userId="+userId);
-
+  console.log("userId=" + userId);
   const devices =
     RedisSubscriptionManager.getInstance().subscriptions.get(userId);
+  console.log("devices");
+  console.log(devices);
+
   let deviceNumber;
-  if (devices) deviceNumber = devices?.length + 1;
-  else deviceNumber = 0;
+  if (devices) {
+    deviceNumber = devices?.length + 1;
+    console.log("device number = " + deviceNumber);
+  } else deviceNumber = 0;
   const deviceId = userId + "_" + deviceNumber;
   res.json(deviceId);
 });
@@ -45,15 +48,7 @@ wss.on("connection", async (ws) => {
   let userId: string | null = null;
   let deviceId: string | null = null;
   ws.on("message", async (data: string) => {
-    const parsedData: {
-      type: string;
-      deviceId: string;
-      userId: string;
-      message: string | null;
-      receiverId: string | null;
-      payload: any;
-      receiverEmailId: string | null;
-    } = JSON.parse(data);
+    const parsedData: WebSockMsg = JSON.parse(data);
     userId = parsedData.userId;
     deviceId = parsedData.deviceId;
     console.log(parsedData);
@@ -182,4 +177,14 @@ export async function getReceivedRequests(receiverId: string) {
     where: { receiverId },
     include: { receiver: true },
   });
+}
+
+export interface WebSockMsg {
+  type: string;
+  deviceId: string;
+  userId: string;
+  message: string | null;
+  receiverId: string | null;
+  payload: any;
+  receiverEmailId: string | null;
 }
